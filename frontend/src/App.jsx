@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 function App() {
@@ -9,9 +8,7 @@ function App() {
   useEffect(() => {
     async function fetchRides() {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/rides"
-        );
+        const response = await fetch("http://localhost:5000/api/rides");
 
         if (!response.ok) {
           throw new Error("Failed to fetch rides");
@@ -28,6 +25,47 @@ function App() {
 
     fetchRides();
   }, []);
+
+  const updateRideStatus = async (id, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/rides/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update ride status");
+      }
+
+      const updatedRide = await response.json();
+      setRides((prevRides) =>
+        prevRides.map((ride) =>
+          ride.id === updatedRide.id ? updatedRide : ride
+        )
+      );
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const deleteRide = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/rides/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete ride");
+      }
+
+      setRides((prevRides) => prevRides.filter((ride) => ride.id !== id));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   if (loading) {
     return <h2>Loading rides...</h2>;
@@ -55,6 +93,33 @@ function App() {
           <p>Pickup: {ride.pickup}</p>
           <p>Destination: {ride.destination}</p>
           <p>Status: {ride.status}</p>
+          <button
+            onClick={() => updateRideStatus(ride.id, "Completed")}
+            style={{
+              marginRight: "10px",
+              padding: "6px 12px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Mark as Completed
+          </button>
+          <button
+            onClick={() => deleteRide(ride.id)}
+            style={{
+              padding: "6px 12px",
+              backgroundColor: "#f44336",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Delete Ride
+          </button>
         </div>
       ))}
     </div>
